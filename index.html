@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smile please</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Oswald:wght@300&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#3b2a22;--paper:#fdfcfa;--fur:#f4b66a;--fur-light:#fff6e6;--blush:#f7a6a0}
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%;background:#000}
+  body{display:flex;align-items:center;justify-content:center;
+       padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+
+  #stage{position:relative;height:min(100vh,calc(100vw*16/9));aspect-ratio:9/16;
+         background:radial-gradient(circle at 50% 55%,#fffdf8 0,#fdf6ea 70%,#f9eddb 100%);
+         overflow:hidden;container-type:inline-size;
+         font-family:'Caveat Brush','Segoe Print',cursive;color:var(--ink)}
+
+  .caption{position:absolute;left:0;right:0;top:15%;text-align:center;
+           font-size:7.6cqw;letter-spacing:.02em;opacity:0;transform:translateY(2cqw);
+           transition:opacity .6s,transform .6s}
+  .caption.show{opacity:1;transform:none}
+  #cap1{color:#6b5d57}
+
+  #hamster{position:absolute;left:50%;top:54%;width:62cqw;transform:translate(-50%,-46%)}
+  #hamster.shake{animation:shake .45s}
+  @keyframes shake{20%{transform:translate(-50%,-46%) scale(1.04) rotate(-1.5deg)}
+                   45%{transform:translate(-50%,-46%) scale(.98) rotate(1deg)}
+                   100%{transform:translate(-50%,-46%)}}
+  svg{display:block;width:100%;height:auto;overflow:visible;transition:transform .6s}
+
+  #body{animation:breathe 2.6s ease-in-out infinite;transform-origin:50% 100%}
+  @keyframes breathe{50%{transform:scale(1.015,1.025)}}
+
+  /* camera */
+  #cam{transition:transform .9s cubic-bezier(.5,0,.2,1);transform:translate(0,-34px);transform-box:fill-box;transform-origin:center}
+  #stage.lowered #cam{transform:translate(0,0)}
+  #cam.tap{animation:wiggle .7s}
+  @keyframes wiggle{0%,100%{transform:translate(0,0)}20%{transform:translate(-4px,2px) rotate(-5deg)}
+                    40%{transform:translate(4px,0) rotate(5deg)}60%{transform:translate(-3px,2px) rotate(-3deg)}80%{transform:translate(3px,0) rotate(3deg)}}
+  #screen{fill:#d8e2e8;transition:fill .4s}
+  #stage.lowered #screen{fill:#0e0e0e}
+  #stage.charge #lens-ring{animation:charge .9s ease-in forwards}
+  @keyframes charge{0%{stroke:var(--ink)}100%{stroke:#ffd34d;stroke-width:6}}
+
+  /* face states */
+  .eyes-peek,.eyes-shock,.mouth-wavy,.mouth-o,.brows-conf,.brows-shock,#sweat{opacity:0;transition:opacity .15s}
+  #pupils{transition:transform .35s}
+  .lid{transform-origin:center;animation:blink 4.2s infinite}
+  @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+
+  /* looking around for someone to photograph */
+  #stage.search #pupils{animation:look 2s ease-in-out infinite}
+  @keyframes look{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}50%{transform:translateX(0)}75%{transform:translateX(7px)}}
+  #stage.search svg{animation:sway 2s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+
+  #stage.peek .eyes-dark{opacity:0}
+  #stage.peek .eyes-peek{opacity:1}
+
+  /* waiting for the picture to show up: eyes look down at the screen */
+  #stage.lookdown #pupils{transform:translateY(5px)}
+
+  /* huh? */
+  #stage.confused .mouth-smile{opacity:0}
+  #stage.confused .mouth-wavy{opacity:1}
+  #stage.confused .brows-conf{opacity:1}
+  #stage.confused svg{transform:rotate(-6deg)}
+  #stage.confused #pupils{transform:translate(-3px,3px)}
+
+  /* astonished */
+  #stage.shock .eyes-dark,#stage.shock .eyes-peek{opacity:0}
+  #stage.shock .eyes-shock{opacity:1}
+  #stage.shock .mouth-smile,#stage.shock .mouth-wavy{opacity:0}
+  #stage.shock .mouth-o{opacity:1}
+  #stage.shock .brows-shock{opacity:1}
+  #stage.shock #sweat{opacity:1}
+  #stage.shock svg{animation:jolt .55s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes jolt{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-5cqw) scale(1.08,1.1)}100%{transform:none}}
+  #stage.shock .ear{animation:ear .5s ease-out forwards}
+  @keyframes ear{to{transform:translateY(-7px)}}
+
+  /* speech/emote bubbles */
+  .emote{position:absolute;opacity:0;pointer-events:none;transform:scale(.4);transition:opacity .25s,transform .35s cubic-bezier(.3,1.6,.5,1)}
+  .emote.show{opacity:1;transform:scale(1)}
+  #bubble{right:6cqw;top:25%;background:#fff;border:.7cqw solid var(--ink);border-radius:50%;
+          padding:2.4cqw 5cqw;font-size:9cqw;transform-origin:20% 100%}
+  #bubble::after{content:"";position:absolute;left:4cqw;bottom:-3.2cqw;width:4cqw;height:4cqw;
+                 background:#fff;border-right:.7cqw solid var(--ink);border-bottom:.7cqw solid var(--ink);
+                 transform:rotate(60deg) skew(10deg)}
+  #mark1{left:13cqw;top:26%;font-size:17cqw;color:#e5483a;transform-origin:center}
+  #mark2{right:11cqw;top:23%;font-size:22cqw;color:#e5483a}
+  #mark1.show{transform:rotate(-14deg) scale(1)}
+  #mark2.show{transform:rotate(12deg) scale(1)}
+
+  /* countdown */
+  #count{position:absolute;left:0;right:0;top:30%;text-align:center;font-size:26cqw;
+         color:#f0a43e;opacity:0;pointer-events:none;text-shadow:0 .8cqw 0 #fff}
+  #count.tick{animation:tick .9s ease-out}
+  @keyframes tick{0%{opacity:0;transform:scale(1.8)}25%{opacity:1;transform:scale(1)}
+                  80%{opacity:1}100%{opacity:0;transform:scale(.8)}}
+
+  /* flash */
+  #burst{position:absolute;left:50%;top:60%;width:150cqw;aspect-ratio:1;border-radius:50%;
+         transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;
+         background:repeating-conic-gradient(from 0deg,rgba(255,236,160,.95) 0 6deg,rgba(255,255,255,0) 6deg 18deg);
+         -webkit-mask:radial-gradient(circle,#000 8%,transparent 68%);mask:radial-gradient(circle,#000 8%,transparent 68%)}
+  #burst.pop{animation:burst .8s ease-out}
+  @keyframes burst{0%{opacity:1;transform:translate(-50%,-50%) scale(.1) rotate(0)}
+                   100%{opacity:0;transform:translate(-50%,-50%) scale(1.2) rotate(40deg)}}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+  #flash.pop{animation:pop .55s ease-out}
+  @keyframes pop{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
+
+  .spark{position:absolute;left:50%;top:60%;width:6cqw;height:6cqw;pointer-events:none;
+         background:#ffcf4d;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);
+         animation:fly 1.1s ease-out forwards}
+  @keyframes fly{0%{transform:translate(-50%,-50%) scale(0) rotate(0);opacity:1}60%{opacity:1}
+                 100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(var(--s)) rotate(180deg);opacity:0}}
+
+  #replay{position:absolute;bottom:5cqw;left:0;right:0;text-align:center;
+          font:300 3.6cqw 'Oswald',sans-serif;color:#8a7a70;background:none;border:0;
+          letter-spacing:.06em;cursor:pointer;opacity:0;transition:opacity .6s}
+  #stage.done #replay{opacity:1}
+  #replay:focus-visible{outline:2px solid var(--ink);outline-offset:6px}
+
+  @media (prefers-reduced-motion:reduce){
+    #body,.lid,#stage.search #pupils,#stage.search svg{animation:none}
+    #cam,svg{transition:none}
+  }
+</style>
+</head>
+<body>
+<main id="stage" aria-label="A hamster tries to take your photo">
+
+  <p id="cap1" class="caption" aria-live="polite">Smile please</p>
+  <p id="cap2" class="caption">Couldn’t capture your beauty</p>
+  <div id="count" aria-hidden="true"></div>
+  <div id="burst"></div>
+
+  <div id="hamster">
+    <svg viewBox="0 0 300 330" role="img" aria-label="A cartoon hamster holding a camera">
+      <g id="body">
+        <ellipse cx="150" cy="238" rx="82" ry="84" fill="var(--fur-light)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M70 215c-6-42 22-62 80-62s86 20 80 62c-30-22-130-22-160 0z" fill="var(--fur)"/>
+        <ellipse cx="112" cy="318" rx="24" ry="10" fill="#f9d8b4" stroke="var(--ink)" stroke-width="3"/>
+        <ellipse cx="188" cy="318" rx="24" ry="10" fill="#f9d8b4" stroke="var(--ink)" stroke-width="3"/>
+        <g class="ear"><circle cx="86" cy="94" r="24" fill="var(--fur)" stroke="var(--ink)" stroke-width="3"/>
+          <circle cx="86" cy="96" r="12" fill="var(--blush)"/></g>
+        <g class="ear"><circle cx="214" cy="94" r="24" fill="var(--fur)" stroke="var(--ink)" stroke-width="3"/>
+          <circle cx="214" cy="96" r="12" fill="var(--blush)"/></g>
+        <ellipse cx="150" cy="130" rx="92" ry="74" fill="var(--fur-light)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M70 100c14-34 46-44 80-44s66 10 80 44c-24-14-56-20-80-20s-56 6-80 20z" fill="var(--fur)"/>
+        <path d="M150 58v34" stroke="var(--fur-light)" stroke-width="14" stroke-linecap="round"/>
+        <ellipse cx="88" cy="150" rx="20" ry="14" fill="var(--blush)" opacity=".7"/>
+        <ellipse cx="212" cy="150" rx="20" ry="14" fill="var(--blush)" opacity=".7"/>
+
+        <!-- eyes -->
+        <g class="eyes-dark" id="pupils">
+          <ellipse class="lid" cx="118" cy="134" rx="6" ry="8" fill="var(--ink)"/>
+          <ellipse class="lid" cx="182" cy="134" rx="6" ry="8" fill="var(--ink)"/>
+          <circle cx="120" cy="130" r="2" fill="#fff"/><circle cx="184" cy="130" r="2" fill="#fff"/>
+        </g>
+        <g class="eyes-peek" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none">
+          <path d="M110 136q8-9 16 0"/><path d="M174 136q8-9 16 0"/>
+        </g>
+        <g class="eyes-shock">
+          <circle cx="116" cy="132" r="15" fill="#fff" stroke="var(--ink)" stroke-width="3"/>
+          <circle cx="184" cy="132" r="15" fill="#fff" stroke="var(--ink)" stroke-width="3"/>
+          <circle cx="116" cy="132" r="3.5" fill="var(--ink)"/><circle cx="184" cy="132" r="3.5" fill="var(--ink)"/>
+        </g>
+
+        <!-- brows -->
+        <g class="brows-conf" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none">
+          <path d="M106 118q12 2 24 8"/><path d="M174 108q12-6 24-2"/>
+        </g>
+        <g class="brows-shock" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none">
+          <path d="M102 104q14-12 28-4"/><path d="M170 100q14-8 28 4"/>
+        </g>
+
+        <!-- nose + mouths -->
+        <ellipse cx="150" cy="152" rx="6" ry="4.5" fill="var(--ink)"/>
+        <g class="mouth-smile" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M150 156v6M150 162q-8 8-16 2M150 162q8 8 16 2"/></g>
+        <g class="mouth-wavy" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M150 156v5M134 168q5-5 8 0t8 0t8 0t8 0"/></g>
+        <g class="mouth-o"><ellipse cx="150" cy="172" rx="9" ry="12" fill="#5a2b2b" stroke="var(--ink)" stroke-width="3"/>
+          <ellipse cx="150" cy="177" rx="5" ry="4" fill="var(--blush)"/></g>
+
+        <g stroke="var(--ink)" stroke-width="2" stroke-linecap="round">
+          <path d="M60 140l-28-6M60 152l-30 4M62 164l-26 12"/>
+          <path d="M240 140l28-6M240 152l30 4M238 164l26 12"/>
+        </g>
+        <!-- sweat drop -->
+        <path id="sweat" d="M236 92q-9 14-9 21a9 9 0 0 0 18 0q0-7-9-21z" fill="#9fd8f0" stroke="var(--ink)" stroke-width="2.5"/>
+
+        <g id="cam">
+          <rect x="98" y="196" width="104" height="66" rx="9" fill="#e8e4df" stroke="var(--ink)" stroke-width="3"/>
+          <rect x="98" y="196" width="104" height="24" rx="9" fill="#2b2b2b"/>
+          <rect x="110" y="203" width="22" height="9" rx="2" fill="#555"/>
+          <circle id="lens-ring" cx="150" cy="234" r="22" fill="#2b2b2b" stroke="var(--ink)" stroke-width="3"/>
+          <circle cx="150" cy="234" r="14" fill="#1a1a1a"/>
+          <circle cx="145" cy="229" r="4" fill="#fff" opacity=".7"/>
+          <rect id="screen" x="168" y="226" width="26" height="22" rx="3"/>
+          <circle cx="186" cy="208" r="4" fill="#d8503f"/>
+          <ellipse cx="96" cy="232" rx="17" ry="14" fill="var(--fur-light)" stroke="var(--ink)" stroke-width="3"/>
+          <ellipse cx="204" cy="232" rx="17" ry="14" fill="var(--fur-light)" stroke="var(--ink)" stroke-width="3"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <div id="bubble" class="emote">Huh?</div>
+  <div id="mark1" class="emote">!</div>
+  <div id="mark2" class="emote">?</div>
+  <div id="flash"></div>
+  <button id="replay" type="button">Tap to replay</button>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const stage = $("stage");
+  let timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+  const state = (add = [], remove = []) => { stage.classList.remove(...remove); stage.classList.add(...add); };
+
+  function sparkles(n){
+    for(let i=0;i<n;i++){
+      const s = document.createElement("span");
+      s.className = "spark";
+      const a = (i/n)*Math.PI*2 + Math.random()*.4, d = 28 + Math.random()*34;
+      s.style.setProperty("--dx", Math.cos(a)*d + "cqw");
+      s.style.setProperty("--dy", Math.sin(a)*d*1.1 + "cqw");
+      s.style.setProperty("--s", (.5 + Math.random()*1.1).toFixed(2));
+      s.style.animationDelay = (Math.random()*.12) + "s";
+      stage.appendChild(s);
+      setTimeout(() => s.remove(), 1500);
+    }
+  }
+  const count = t => { const c = $("count"); c.textContent = t; restart(c, "tick"); };
+
+  function play(){
+    timers.forEach(clearTimeout); timers = [];
+    stage.className = "";
+    ["cap1","cap2"].forEach(i => $(i).classList.remove("show"));
+    ["bubble","mark1","mark2"].forEach(i => $(i).classList.remove("show"));
+    $("count").classList.remove("tick");
+
+    at(300,  () => { $("cap1").classList.add("show"); state(["search"]); });   // looking around for someone to photograph
+    at(2400, () => state(["peek","charge"],["search"]));                       // found you, lines up the shot
+    at(2800, () => count("3"));
+    at(3700, () => count("2"));
+    at(4600, () => count("1"));
+    at(5500, () => {                                                           // CLICK
+      restart($("flash"), "pop"); restart($("burst"), "pop"); restart($("hamster"), "shake");
+      sparkles(16);
+    });
+    at(5800, () => { state(["lowered","lookdown"],["peek","charge"]); $("cap1").classList.remove("show"); }); // checks the camera
+    at(7400, () => { state(["confused"],["lookdown"]); $("bubble").classList.add("show"); });                 // nothing there... huh?
+    at(8300, () => restart($("cam"), "tap"));                                                                  // taps the camera
+    at(9300, () => {                                                                                           // astonished
+      state(["shock"],["confused"]);
+      $("bubble").classList.remove("show");
+      $("mark1").classList.add("show"); $("mark2").classList.add("show");
+    });
+    at(10600, () => $("cap2").classList.add("show"));                          // Couldn't capture your beauty
+    at(12500, () => stage.classList.add("done"));
+  }
+  $("replay").addEventListener("click", play);
+  play();
+</script>
+</body>
+</html>
